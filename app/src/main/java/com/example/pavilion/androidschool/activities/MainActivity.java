@@ -16,6 +16,8 @@ import android.widget.Toast;
 import com.example.pavilion.androidschool.R;
 import com.example.pavilion.androidschool.adapter.VideoListAdapter;
 import com.example.pavilion.androidschool.model.VideoEntry;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.plus.Plus;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
@@ -26,26 +28,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity implements Drawer.OnDrawerListener, Drawer.OnDrawerItemClickListener{
+public class MainActivity extends ActionBarActivity implements Drawer.OnDrawerListener, Drawer.OnDrawerItemClickListener {
     private VideoListAdapter adapter;
     private ListView listView;
     private Toolbar toolbar;
     private String mTitle;
     private Drawer.Result mDrawer = null;
+    private GoogleApiClient mClient;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(mClient != null && mClient.isConnected())
+            mClient.disconnect();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initDrawer();
-            final List<VideoEntry> list = new ArrayList<VideoEntry>();
-            list.add(new VideoEntry("Урок 1. Введение.", "zfUZ-D6tWxU"));
-            list.add(new VideoEntry("Урок 2. Установка и настройка Android Studio. Установка JDK. Настройка Android SDK", "9ucX3UlCT6E"));
-            list.add(new VideoEntry("Урок 3. Первое андроид-приложение. Структура android проекта. Создание эмулятора Android (AVD)", "SbWzaPtvzJA"));
-            list.add(new VideoEntry("Урок 4. Activity, Layout, View, ViewGroup Элементы экрана в android, их свойства", "goESBP6iUuw"));
-            list.add(new VideoEntry("Урок 5. Файл макета экрана android-приложения в XML виде. Поворот устройства", "DLsKPE9NviA"));
-            list.add(new VideoEntry("Урок 6. LinearLayout и RelativeLayout - особенности макетов экранов android", "gm0gCY2qA54"));
-            list.add(new VideoEntry("Урок 6(2).TableLayout - особенности макетов экранов в андроид", "Uspml6OP3tE"));
+        final List<VideoEntry> list = new ArrayList<VideoEntry>();
+        list.add(new VideoEntry("Урок 1. Введение.", "zfUZ-D6tWxU"));
+        list.add(new VideoEntry("Урок 2. Установка и настройка Android Studio. Установка JDK. Настройка Android SDK", "9ucX3UlCT6E"));
+        list.add(new VideoEntry("Урок 3. Первое андроид-приложение. Структура android проекта. Создание эмулятора Android (AVD)", "SbWzaPtvzJA"));
+        list.add(new VideoEntry("Урок 4. Activity, Layout, View, ViewGroup Элементы экрана в android, их свойства", "goESBP6iUuw"));
+        list.add(new VideoEntry("Урок 5. Файл макета экрана android-приложения в XML виде. Поворот устройства", "DLsKPE9NviA"));
+        list.add(new VideoEntry("Урок 6. LinearLayout и RelativeLayout - особенности макетов экранов android", "gm0gCY2qA54"));
+        list.add(new VideoEntry("Урок 6(2).TableLayout - особенности макетов экранов в андроид", "Uspml6OP3tE"));
 
         adapter = new VideoListAdapter(getApplicationContext(), list);
         listView = (ListView) findViewById(R.id.listView);
@@ -57,11 +73,16 @@ public class MainActivity extends ActionBarActivity implements Drawer.OnDrawerLi
                 String videoIdInte = list.get(position).VideoId;
                 Intent intent = new Intent();
                 intent.setClass(getApplicationContext(), VideoActivity.class);
-                intent.putExtra("textKey",textInte);
+                intent.putExtra("textKey", textInte);
                 intent.putExtra("idKey", videoIdInte);
                 startActivity(intent);
             }
         });
+
+        mClient = new GoogleApiClient.Builder(this)
+                .addApi(Plus.API)
+                .addScope(Plus.SCOPE_PLUS_PROFILE)
+                .build();
     }
 
     private void initDrawer() {
@@ -115,9 +136,19 @@ public class MainActivity extends ActionBarActivity implements Drawer.OnDrawerLi
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l, IDrawerItem iDrawerItem) {
-        if (pos == 5){
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+        switch (pos) {
+            case 5:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+            case 6:
+                if(mClient != null && mClient.isConnected()) {
+                    mClient.clearDefaultAccountAndReconnect();
+                    Plus.AccountApi.clearDefaultAccount(mClient);
+                    mClient.disconnect();
+                }
+                finish();
+                break;
         }
         Toast.makeText(this, "pos " + pos, Toast.LENGTH_SHORT).show();
     }

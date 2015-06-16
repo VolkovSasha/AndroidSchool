@@ -24,6 +24,7 @@ public class SplashActivity extends Activity {
         setNextActivity(LoginActivity.class);
         //initAuthenticatedCB();
         //authenticatedRequest();
+        showNewActivity();
     }
 
     private void showNewActivity(){
@@ -34,7 +35,7 @@ public class SplashActivity extends Activity {
                 openActivity();
             }
         };
-        worker.schedule(task, 2, TimeUnit.SECONDS);
+        worker.schedule(task, 5, TimeUnit.SECONDS);
     }
 
     private void openActivity() {
