@@ -6,10 +6,14 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.example.pavilion.androidschool.AndroidSchoolApp;
 import com.example.pavilion.androidschool.R;
+import com.example.pavilion.androidschool.db.Profile;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
+
+import java.sql.SQLException;
 
 /**
  * Created by Pavilion on 27.04.2015.
@@ -48,6 +52,14 @@ public class LoginActivity extends Activity implements
     public void onConnected(Bundle bundle) {
         Log.w("PLUS", "Connected");
         mSignInClick = false;
+
+        Profile profile = new Profile(Plus.AccountApi.getAccountName(mClient));
+        try {
+            ((AndroidSchoolApp) getApplication()).getContactManager().create(profile);
+        } catch(SQLException ex) {
+            Log.e(LoginActivity.class.getSimpleName(), ex.getMessage(), ex);
+        }
+
         startActivity(new Intent(this, MainActivity.class));
         finish();
     }
